@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { CoachCalendar } from "./ui/CoachCalendar";
 import { Booking, Coach, Student } from "@/models/models";
 import { CoachComponent } from "./ui/Coach";
+import { StudentComponent } from "./ui/Student";
+import { StudentCalendar } from "./ui/StudentCalendar";
 
 const COACH = "COACH";
 const STUDENT = "STUDENT";
@@ -16,6 +18,26 @@ export default function Home() {
   const [bookings, setBookings] = useState<Booking[]>();
   const [coaches, setCoaches] = useState<Coach[]>();
   const [students, setStudents] = useState<Student[]>();
+
+  const loginStudent = () => {
+    const sample_student: Student = {
+      id: 1,
+      full_name: "Megan Smith",
+      phone: "111-222-3333",
+    };
+    setStudent(sample_student);
+    setUser(STUDENT);
+  };
+
+  const loginCoach = () => {
+    const sample_coach: Coach = {
+      id: 1,
+      full_name: "THE COACH",
+      phone: "111-222-3333",
+    };
+    setCoach(sample_coach);
+    setUser(COACH);
+  };
 
   const logout = () => {
     setUser(undefined);
@@ -47,10 +69,10 @@ export default function Home() {
         <div className="pt-32">
           {!user && (
             <div className="w-full flex items-center justify-center gap-3">
-              <button className="btn" onClick={() => setUser(STUDENT)}>
+              <button className="btn" onClick={loginStudent}>
                 Student
               </button>
-              <button className="btn" onClick={() => setUser(COACH)}>
+              <button className="btn" onClick={loginCoach}>
                 Coach
               </button>
             </div>
@@ -60,6 +82,17 @@ export default function Home() {
               <CoachComponent bookings={bookings} setBookings={setBookings}>
                 <CoachCalendar bookings={bookings}></CoachCalendar>
               </CoachComponent>
+            </div>
+          )}
+          {user == STUDENT && (
+            <div className="w-full">
+              <StudentComponent bookings={bookings} setBookings={setBookings}>
+                <StudentCalendar
+                  bookings={bookings}
+                  setBookings={setBookings}
+                  student={student}
+                ></StudentCalendar>
+              </StudentComponent>
             </div>
           )}
         </div>

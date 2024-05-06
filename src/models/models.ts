@@ -6,13 +6,13 @@ export type Booking = {
 };
 
 export type Student = {
-  student_id: number;
+  id: number;
   full_name: string;
   phone: string;
 };
 
 export type Coach = {
-  coach_id: number;
+  id: number;
   full_name: string;
   phone: string;
 };
