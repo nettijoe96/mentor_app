@@ -10,13 +10,27 @@ export function AddToCalendar(props: any) {
     const time_end = new Date(dateTime);
     time_end.setTime(time_end.getTime() + 2 * 60 * 60 * 1000);
 
+    const new_booking = {
+      time_start: dateTime,
+      time_end: time_end.toISOString(),
+    };
     setBookings((bookings: any) => {
-      const new_booking = {
-        time_start: dateTime,
-        time_end: time_end.toISOString(),
-      };
       return [...bookings, new_booking];
     });
+
+    fetch("/update", {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+      },
+      body: JSON.stringify(new_booking),
+    })
+      .then((resp) => resp.json())
+      .then((resp) => {
+        if (resp.status != 200) {
+          //TODO: remove from bookings here because it failed to create
+        }
+      });
   };
 
   return (

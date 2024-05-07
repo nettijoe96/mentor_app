@@ -1,18 +1,12 @@
-import { useState } from "react";
-import { AddToCalendar } from "./AddToCalendar";
-import { BookOnCalendar } from "./BookOnCalendar";
-
 export function StudentComponent(props: any) {
-  const { bookings, setBookings, children } = props;
+  const { children, coach } = props;
 
   return (
     <div className="flex flex-col justify-between items-center gap-3">
-      <div className="text-md">Coach Fred Smith's Calendar</div>
+      <div className="text-md">
+        Book a time on {coach.full_name}'s Calendar:
+      </div>
       {children}
-      {/* <BookOnCalendar
-        bookings={bookings}
-        setBookings={setBookings}
-      ></BookOnCalendar> */}
     </div>
   );
 }

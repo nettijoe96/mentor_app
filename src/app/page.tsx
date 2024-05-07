@@ -6,51 +6,56 @@ import { Booking, Coach, Student } from "@/models/models";
 import { CoachComponent } from "./ui/Coach";
 import { StudentComponent } from "./ui/Student";
 import { StudentCalendar } from "./ui/StudentCalendar";
+import { createClient } from "@supabase/supabase-js";
 
 const COACH = "COACH";
 const STUDENT = "STUDENT";
 
 export default function Home() {
-  // TODO: reduce number of state variables
   const [user, setUser] = useState<string>();
-  const [student, setStudent] = useState<Student>();
-  const [coach, setCoach] = useState<Coach>();
-  const [bookings, setBookings] = useState<Booking[]>();
-  const [coaches, setCoaches] = useState<Coach[]>();
   const [students, setStudents] = useState<Student[]>();
-
-  const loginStudent = () => {
-    const sample_student: Student = {
-      id: 1,
-      full_name: "Megan Smith",
-      phone: "111-222-3333",
-    };
-    setStudent(sample_student);
-    setUser(STUDENT);
-  };
-
-  const loginCoach = () => {
-    const sample_coach: Coach = {
-      id: 1,
-      full_name: "THE COACH",
-      phone: "111-222-3333",
-    };
-    setCoach(sample_coach);
-    setUser(COACH);
-  };
+  const [bookings, setBookings] = useState<Booking[]>();
+  const [coach, setCoach] = useState<Coach>();
+  const [student, setStudent] = useState<Student>();
 
   const logout = () => {
     setUser(undefined);
   };
 
   useEffect(() => {
-    const booking = {
-      student_id: 1,
-      time_start: new Date().toDateString(),
-      time_end: new Date().toDateString(),
-    };
+    const supabaseURL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+    const supabaseANON = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+    const supabase = createClient(supabaseURL, supabaseANON); //eslint-disable-line
 
-    setBookings([booking]);
+    supabase
+      .from("bookings")
+      .select("*")
+      .eq("active", true) // this took me awhile to figure out, .select(*) doesn't work as expected
+      .then((resp) => {
+        if (resp.data) {
+          const bookings = resp.data;
+          setBookings(bookings);
+        }
+      });
+
+    supabase
+      .from("coaches")
+      .select("*")
+      .then((resp) => {
+        if (resp.data && resp.data.length > 0) {
+          // TODO: replace this if allowing for many coaches
+          setCoach(resp.data[0]);
+        }
+      });
+
+    supabase
+      .from("students")
+      .select("*")
+      .then((resp) => {
+        if (resp.data) {
+          setStudents(resp.data);
+        }
+      });
   }, []);
 
   return (
@@ -68,25 +73,46 @@ export default function Home() {
         </div>
         <div className="pt-32">
           {!user && (
-            <div className="w-full flex items-center justify-center gap-3">
-              <button className="btn" onClick={loginStudent}>
-                Student
-              </button>
-              <button className="btn" onClick={loginCoach}>
-                Coach
+            <div className="w-full flex flex-col items-center justify-center gap-3">
+              <div className="flex flex-col items-center gap-2">
+                Sign in as student:
+                {students &&
+                  students.map((student: Student, index: number) => (
+                    <button
+                      key={index}
+                      className="btn"
+                      onClick={() => {
+                        setUser(STUDENT);
+                        setStudent(student);
+                      }}
+                    >
+                      {student.full_name}
+                    </button>
+                  ))}
+              </div>
+              Sign in as coach:
+              <button className="btn" onClick={() => setUser(COACH)}>
+                {coach && coach.full_name}
               </button>
             </div>
           )}
-          {user == COACH && (
+          {user == COACH && bookings && (
             <div className="w-full">
-              <CoachComponent bookings={bookings} setBookings={setBookings}>
-                <CoachCalendar bookings={bookings}></CoachCalendar>
+              <CoachComponent
+                bookings={bookings}
+                coach={coach}
+                setBookings={setBookings}
+              >
+                <CoachCalendar
+                  bookings={bookings}
+                  students={students}
+                ></CoachCalendar>
               </CoachComponent>
             </div>
           )}
-          {user == STUDENT && (
+          {user == STUDENT && bookings && (
             <div className="w-full">
-              <StudentComponent bookings={bookings} setBookings={setBookings}>
+              <StudentComponent coach={coach}>
                 <StudentCalendar
                   bookings={bookings}
                   setBookings={setBookings}
